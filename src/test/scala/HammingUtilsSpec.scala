@@ -9,6 +9,7 @@ class HammingUtilsSpec extends AnyFlatSpec with Matchers {
         val data3 = Array(true, false, true, false)
         val dataIdx3 = data3.zipWithIndex
         val dataPos3 = handler3.zipWithData(data3)
+        val pack3 = Array(false, true, false, true, true, false, true, false)
 
         val par3_6 = Array(false, true, true)
     }
@@ -40,6 +41,33 @@ class HammingUtilsSpec extends AnyFlatSpec with Matchers {
     }
 
     "createHammingBlock" should "create a block of hamming encoded data" in new HUCommons {
-        HammingUtils.createHammingBlock(data3)(handler3) shouldBe Array(false, true, false, true, true, false, true, false)
+        HammingUtils.createHammingBlock(data3)(handler3) shouldBe pack3
+    }
+
+    "unpackHammingBlock" should "get the data from a hamming block" in new HUCommons {
+        HammingUtils.unpackHammingBlock(pack3)(handler3) shouldBe data3 
+    }
+
+    "validateParities" should "identify a correct Hamming Block" in new HUCommons {
+        HammingUtils.validateParities(pack3)(handler3) shouldBe Right(pack3) 
+    }
+    
+    it should "identify an error in the data" in new HUCommons {
+        val res = HammingUtils.validateParities(Array(false, true, false, true, true, false, false, false))(handler3)
+        res.isRight shouldBe true
+        res.right.get shouldBe pack3
+    }
+    
+    it should "identify an error in the parities" in new HUCommons {
+        val res = HammingUtils.validateParities(Array(false, false, false, true, true, false, true, false))(handler3) 
+        res.isRight shouldBe true
+        res.right.get shouldBe pack3
+    }
+    
+    it should "identify whether there are two errors" in new HUCommons {
+        val res = HammingUtils.validateParities(Array(false, false, false, true, true, false, false, false))(handler3) 
+        res.isLeft shouldBe true
+        res.left.get shouldBe a [HammingException]
+        res.left.get.bits shouldBe Array(false, false, false, true, true, false, false, false)
     }
 }

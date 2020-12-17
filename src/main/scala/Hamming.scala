@@ -31,14 +31,13 @@ object Hamming {
 
   def clean(): Unit = {}
 
-  def decode(input: HammingEncoded): Either[HammingException, String] =
+  def decode(input: HammingEncoded): Either[HammingException, String] = 
     ByteUtils
       .safeWindows(input.bits, handler.fullSize)
       .foldLeft[Either[HammingException, Array[Boolean]]](Right(Array.emptyBooleanArray))((acc, bits) => {
         for(accArr <- acc.right; 
             parityResult <- HammingUtils.validateParities(bits).right) yield {
-              val prepped = if(parityResult != 0) bits.updated(parityResult, !bits(parityResult)) else bits
-              accArr ++ HammingUtils.unpackHammingBlock(prepped)
+              accArr ++ HammingUtils.unpackHammingBlock(parityResult)
             }
       }).right.map(bits => ByteUtils.toBytes(bits).map(_.toChar).mkString(""))
 

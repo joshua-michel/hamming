@@ -1,3 +1,6 @@
+/**
+ * Utility object for dealing with bytes and bits
+ */
 object ByteUtils {
 
   val b0 = 0.toByte
@@ -10,6 +13,9 @@ object ByteUtils {
   val b64 = 64.toByte
   val b128 = 128.toByte
 
+  /**
+   * Big-endian array of 8 bits
+   */
   val bArray = Array(b128, b64, b32, b16, b8, b4, b2, b1)
 
   /**
@@ -45,11 +51,26 @@ object ByteUtils {
     }
 
   /**
+   * Split the given array into windows of size n with no overlaps.
+   * Every array returned should have the same size with the last array being padded with falses
+   *
+   * @param bits the array to split
+   * @param size the size of each window
+   * @return
+   */
+  def safeWindows(bits: Array[Boolean], size: Int): Array[Array[Boolean]] = {
+    val windows = bits.sliding(size, size).toArray
+    //Pad last one in place
+    windows.update(windows.size - 1, windows.last.padTo(size, false))
+    windows
+  }
+
+  /**
    * Split the given array into two pieces: a head of the first n bits and a tail of the rest.
    * The operation is preformed safely, ensuring that the head is padded with falses if it would be too small.
    * The tail can be empty.
    *
-   * N.B. unused by the rest of this project
+   * N.B. Unused by the rest of this project
    *
    * @param bits the array to split
    * @param n the size to split off
@@ -61,14 +82,15 @@ object ByteUtils {
     else
       bits.splitAt(n)
 
-  def safeWindows(bits: Array[Boolean], size: Int): Array[Array[Boolean]] = {
-    val windows = bits.sliding(size, size).toArray
-    //Pad last one
-    windows.update(windows.size - 1, windows.last.padTo(size, false))
-    windows
-  }
-
-  //Not useful
+  /**
+   * Pair up a list of bytes. This is a manual window of 2.
+   * If there is an odd number of bytes, the last byte is paired with a 0 byte.
+   *
+   * N.B. Unused by the rest of this project
+   *
+   * @param bytes the bytes to pair up
+   * @return array of paired bytes
+   */
   def pairBytes(bytes: Array[Byte]): Array[(Byte, Byte)] = {
     val pairedAlmost =
       bytes.foldLeft(
