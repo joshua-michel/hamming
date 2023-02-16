@@ -48,17 +48,17 @@ class HammingUtilsSpec extends AnyFlatSpec with Matchers {
         HammingUtils.unpackHammingBlock(pack3)(handler3) shouldBe data3 
     }
 
-    "validateParities" should "identify a correct Hamming Block" in new HUCommons {
+    "validateParities" should "identify and return a correct Hamming Block" in new HUCommons {
         HammingUtils.validateParities(pack3)(handler3) shouldBe Right(pack3) 
     }
     
-    it should "identify an error in the data" in new HUCommons {
+    it should "identify and fix an error in the data" in new HUCommons {
         val res = HammingUtils.validateParities(Array(false, true, false, true, true, false, false, false))(handler3)
         res.isRight shouldBe true
         res.right.get shouldBe pack3
     }
     
-    it should "identify an error in the parities" in new HUCommons {
+    it should "identify and fix an error in the parities" in new HUCommons {
         val res = HammingUtils.validateParities(Array(false, false, false, true, true, false, true, false))(handler3) 
         res.isRight shouldBe true
         res.right.get shouldBe pack3

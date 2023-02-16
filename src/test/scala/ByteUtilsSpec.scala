@@ -43,6 +43,10 @@ class ByteUtilsSpec extends AnyFlatSpec with Matchers {
       ByteUtils.toBytes(Array(false, false, true, false, true, false)) shouldBe Array(40.toByte)
   }
 
+  it should "return empty if provided no data" in {
+    ByteUtils.toBytes(Array.empty) shouldBe empty
+  }
+
   "safeSplit" should "split a boolean Array" in {
     val res = ByteUtils.safeSplit(Array(true, true, false, false), 2)
     res._1 shouldBe Array(true, true)
@@ -73,6 +77,11 @@ class ByteUtilsSpec extends AnyFlatSpec with Matchers {
     )
     res.size shouldBe 2
     res(1) shouldBe ByteUtils.toBits(24.toByte)
+  }
+
+  it should "return empty if provided empty" in {
+    val res = ByteUtils.safeWindows(Array.empty, 8)
+    res shouldBe empty
   }
 
 }

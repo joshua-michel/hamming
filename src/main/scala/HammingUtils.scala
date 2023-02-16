@@ -9,8 +9,10 @@ case class HammingHandler(size: Int) {
 
   lazy val parityPosArr: Array[Int] = (0 until size).map(Math.pow(2, _).toInt).toArray
 
-  lazy val dataPosArr: Array[Int] =
+  lazy val dataPosArr: Array[Int] = {
+    //0, 1, and 2 cannot be data
     (3 until fullSize).filter(i => !parityPosArr.contains(i)).toArray
+  }
 
   val fullCheckPos: Int = 0
 
@@ -54,7 +56,7 @@ object HammingUtils {
    * @param arr an array of position zipped values to search
    * @return the number of true values
    */
-  def countTrues(arr: Array[(Boolean, Int)]): Int = arr.filter(_._1).size
+  def countTrues(arr: Array[(Boolean, Int)]): Int = arr.count(_._1)
 
   /**
    * Get the parity values with their locations
@@ -94,7 +96,7 @@ object HammingUtils {
     handler.dataPosArr.map(data.apply)
 
   /**
-   * Validate whether the given Hasmming Block can be safely unpacked by checking parities
+   * Validate whether the given Hamming Block can be safely unpacked by checking all parities
    *
    * @param data the Hamming block to validate
    * @param handler the Handler for the HammingBlock
@@ -109,7 +111,6 @@ object HammingUtils {
 
     val paritiesPass = netTrue == 0
     val metaPass = trues.length % 2 == 0
-    println(s"netTrue: $netTrue, truesCount: ${trues.length}")
 
     //No error
     if (paritiesPass)
@@ -120,6 +121,27 @@ object HammingUtils {
       newData.update(netTrue, !data(netTrue))
       Right(newData)
     }
+    else
+      Left(HammingException(data))
+  }
+
+  /**
+   * Validate whether the given Hamming Block can be safely unpacked by checking only basic parities
+   *
+   * @param data the Hamming block to validate
+   * @param handler the Handler for the HammingBlock
+   * @return Either an error occurred or the data is completely correct
+   */
+  def validateParitiesNoMeta(
+      data: Array[Boolean]
+    )(implicit handler: HammingHandler): Either[HammingException, Array[Boolean]] = {
+    val zipped = data.zipWithIndex
+    val trues = findTrues(zipped)
+    val netTrue = trues.fold(0)(_ ^ _)
+
+    //No error
+    if (netTrue == 0)
+      Right(data)
     else
       Left(HammingException(data))
   }

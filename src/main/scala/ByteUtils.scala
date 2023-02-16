@@ -3,6 +3,8 @@
  */
 object ByteUtils {
 
+  val byteSize = 8
+
   val b0 = 0.toByte
   val b1 = 1.toByte
   val b2 = 2.toByte
@@ -35,6 +37,13 @@ object ByteUtils {
   def toBits(bytes: Array[Byte]): Array[Boolean] =
     bytes.map(toBits).fold(Array.emptyBooleanArray)(_ ++ _)
 
+  def toByte(bits: Array[Boolean]): Byte = {
+    bits.take(byteSize).zip(bArray)
+        .filter(_._1)
+        .map(_._2)
+        .fold(0.toByte)((a, b) => (a ^ b).toByte)
+  }
+
   /**
    * Transform the list of big-endian boolean bits into a list of bytes
    *
@@ -42,7 +51,7 @@ object ByteUtils {
    * @return a list of bytes
    */
   def toBytes(bits: Array[Boolean]): Array[Byte] =
-    safeWindows(bits, 8).map { arr =>
+    safeWindows(bits, byteSize).map { arr =>
       arr
         .zip(bArray)
         .filter(_._1)
@@ -59,10 +68,13 @@ object ByteUtils {
    * @return
    */
   def safeWindows(bits: Array[Boolean], size: Int): Array[Array[Boolean]] = {
-    val windows = bits.sliding(size, size).toArray
-    //Pad last one in place
-    windows.update(windows.size - 1, windows.last.padTo(size, false))
-    windows
+    if (bits.isEmpty) Array.empty
+    else {
+      val windows = bits.sliding(size, size).toArray
+      //Pad last one in place
+      windows.update(windows.length - 1, windows.last.padTo(size, false))
+      windows
+    }
   }
 
   /**
